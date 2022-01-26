@@ -85,7 +85,8 @@ function TodoSection(props) {
 
 function Compleated(props) {
   const todos = props.todos;
-  return `${todos.filter(todo => todo.isDone).length}/${todos.length}`;
+  return (
+    <div>{todos.filter(todo => todo.isDone).length}/{todos.length}</div>);
 }
 
 
