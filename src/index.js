@@ -1,12 +1,19 @@
 import Model from "./todo-model.js";
 import "./style.css"
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import ReactDOM from 'react-dom';
 
 
 
-function View({initialModel}){
-  const [model, setModel] = useState(initialModel);
+function View(){
+  const [model, setModel] = useState(new Model().seedTodos());
+
+  useEffect(() => {
+    setModel(model.seedTodos());
+  }, []);
+
+  const toogle = todo => setModel(model.toogle(todo));
+
   const [searchQuerry, setQuerry] = useState("");
   return (
     <div>
@@ -16,12 +23,15 @@ function View({initialModel}){
         />
       <Compleated todos={model.todos}/>
       <Todos 
-        model={model}
+        toogle = {toogle}
+        todos = {model.todos}
         searchQuerry={searchQuerry}
-        setModel={setModel}/> 
+      /> 
     </div>
   )
 }
+
+
 
 
 
@@ -44,28 +54,27 @@ function Compleated({todos}) {
 }
 
 
-function Todos({searchQuerry, setModel, model}) {
+function Todos({searchQuerry, toogle, todos}) {
   return(
     <div id="todos">
-      {model.todos.filter(todo => 
+      {todos.filter(todo => 
         todo.title.includes(searchQuerry)).map(todo => (
                           <Todo 
                             key={todo.id}
                             todo={todo}
-                            model={model}
-                            setModel={setModel}
+                            toogle = {toogle}
                           />))}
     </div>
   )
 }
 
-function Todo({todo, setModel, model}) {
+function Todo({todo, toogle}) {
   return (
     <label id="todo">
       <input 
         type="checkbox"
         checked={todo.isDone}
-        onChange={() => setModel(model.toogle(todo))}>
+        onChange={() => toogle(todo)}>
       </input>
       {todo.title}
     </label>
@@ -73,8 +82,8 @@ function Todo({todo, setModel, model}) {
 }
 
 
-
+ 
 ReactDOM.render(
-  <View initialModel={new Model().seedTodos()}/>,
+  <View />,
   document.getElementById('root')
 );
