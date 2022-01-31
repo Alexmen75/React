@@ -1,5 +1,5 @@
 
-class Todo {
+export class Todo {
   id;
   title;
   isDone;
@@ -18,38 +18,10 @@ class Todo {
 class Model {
   todos = [];
   constructor(todos) {
-    this.todos = todos;
-  }
-
-  seedTodos = () => {
-    // await delay(1000);
-    return new Model(Array.from({ length: 6 }, (_, i) => new Todo(i, `Task ${i}`)), []);
-  }
-
-  toogle = (todo) => {
-    // await maybeDelay(2000, "Сорян, не смогли бахнуть галочку");
-    const todos = this.todos.slice();
-    todos.splice(todos.indexOf(todo), 1, todo.toogle());
-    return new Model(todos);
-  }
-
-  toogleMany = list => {
-    const todos = this.todos.slice();
-    list.forEach(todo =>
-      todos.splice(todos.indexOf(todo), 1, todo.toogle()));
-    return new Model(todos);
-  }
-
-
-  addTodo = async(emptyTodo) => {
-  // addTodo = async(emptyTodo) => {
-    await maybeDelay(1000, "Не удалось создать элемент");
-    const newTodo = new Todo(this.todos.length, emptyTodo.title, false);
-    const todos = this.todos.slice();
-    todos.push(newTodo);
-    return new Model(todos);
+    this.todos = todos || [];
   }
 }
+
 export default Model;
 
 const delay = num =>
@@ -59,3 +31,52 @@ const delay = num =>
 const maybeDelay = (num, reason) =>
   new Promise((resolve, reject) =>
     setTimeout(() => Math.random() > 0.1 ? resolve() : reject(reason), num, "Delay"));
+
+export const actions = {
+  seedTodos: 0,
+  toogle: 1,
+  toogleMany: 2,
+  addTodo: 3,
+  test: 4,
+}
+
+export function modelReducer(model, action) {
+  switch (action.type) {
+    case actions.seedTodos:
+      return new Model(Array.from({ length: 6 }, (_, i) => new Todo(i, `Task ${i}`)), []);
+    case actions.toogle:
+      toogle(model, action.todo).then(result =>{
+        action.dispatch({type: actions.test, result: result});
+      })
+      return model;
+    case actions.test:
+      return action.result;
+    case actions.toogleMany:
+      return toogleMany(model, action.todos, actions.isDone)
+    case actions.addTodo:
+      return addTodo(model, action.todo);
+    default:
+      return model;
+  }
+}
+
+
+const toogle = async (model, todo) => {
+  await delay(1000);
+  const todos = model.todos.slice();
+  todos.splice(todos.indexOf(todo), 1, todo.toogle());
+  return new Model(todos);
+}
+
+const toogleMany = (model, todosList, isDone) => {
+  const todos = model.todos.slice();
+  todosList.forEach(todo =>
+    todos.splice(todos.indexOf(todo), 1, todo.isDone == isDone ? todo : todo.toogle()));
+  return new Model(todos);
+}
+
+const addTodo = (model, todo) => {
+  const newTodo = new Todo(model.todos.length, todo.title, todo.isDone);
+  const todos = model.todos.slice().concat([newTodo]);
+  return new Model(todos);
+}

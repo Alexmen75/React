@@ -1,51 +1,131 @@
-import Model from "./todo-model.js";
+import Model, { Todo, modelReducer, actions } from "./todo-model.js";
 import "./style.css"
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useCallback, useContext, useMemo, useReducer } from 'react';
 import ReactDOM from 'react-dom';
+import Todos from "./todo";
+import { TodoContext, ToogleManyComtext, NewTodoContext, CreateTodoContext, DeleteTodoContext } from "./context.js";
+import EmptyTodos from "./empty-todos.js";
 
 
 
-function View(){
-  const [model, setModel] = useState(new Model().seedTodos());
+
+function View() {
+  const [model, modelDispatch] = useReducer(modelReducer, new Model());
+  const [searchQuerry, setQuerry] = useState("");
+  const [emptyTodos, setEmptyTodos] = useState([]);
+
 
   useEffect(() => {
-    setModel(model.seedTodos());
+    modelDispatch({type: actions.seedTodos});
   }, []);
 
-  const toogle = todo => setModel(model.toogle(todo));
+  const filtered = useMemo(() =>
+    model.todos.filter(todo =>
+      todo.title.includes(searchQuerry)), [model, searchQuerry]);
 
-  const [searchQuerry, setQuerry] = useState("");
+
+
+
+  const toogle = useCallback(todo => modelDispatch({type: actions.toogle, todo: todo, dispatch: modelDispatch}), []);
+
+  const addTodo = () => setEmptyTodos(emptyTodos.concat([new Todo(-model.todos.length - emptyTodos.length, "", false)]));
+
+  const saveValue = useCallback((todo, value) => setEmptyTodos(emptyTodos => changeValue(todo, emptyTodos, value)), []);
+
+  const toogleMany = state => modelDispatch({type: actions.toogleMany, todos: filtered, isDone: state});
+
+  const addNewTodo = useCallback(todo => modelDispatch({type: actions.addTodo, todo: todo}),[]);
+
+  const deleteEmptyTodo = useCallback(todo => setEmptyTodos(emptyTodos =>deleteTodo(emptyTodos, todo)), []);
+
   return (
     <div>
-      <Search 
-        searchQuerry={searchQuerry}
-        setQuerry={setQuerry}
+      <ToogleManyComtext.Provider value={toogleMany}>
+        <Search
+          searchQuerry={searchQuerry}
+          setQuerry={setQuerry}
         />
-      <Compleated todos={model.todos}/>
-      <Todos 
-        toogle = {toogle}
-        todos = {model.todos}
-        searchQuerry={searchQuerry}
-      /> 
+      </ToogleManyComtext.Provider>
+      <AddTodo addTodo={addTodo} />
+      <TodoContext.Provider value={toogle}>
+        <Compleated todos={model.todos} />
+        <Todos
+          todos={filtered}
+        />
+      </TodoContext.Provider>
+      <NewTodoContext.Provider value={saveValue}>
+        <CreateTodoContext.Provider value={addNewTodo}>
+          <DeleteTodoContext.Provider value={deleteEmptyTodo}>
+          <EmptyTodos
+            emptyTodoList={emptyTodos}
+            setEmptyTodos={setEmptyTodos} />
+          </DeleteTodoContext.Provider>
+        </CreateTodoContext.Provider>
+      </NewTodoContext.Provider>
+    </div>
+  )
+}
+
+const deleteTodo = (todos, todo) =>{
+    const newTodos = todos.slice();
+    newTodos.splice(todos.indexOf(todo), 1);
+    return newTodos;
+} 
+
+function changeValue(todo, listTodo, value) {
+  const newList = listTodo.slice();
+  newList.splice(listTodo.indexOf(todo), 1, new Todo(todo.id, value, todo.isDone));
+  return newList;
+}
+
+
+function AddTodo({ addTodo }) {
+  return (
+    <button onClick={addTodo}>
+      Add
+    </button>
+  )
+}
+
+
+function Search({ searchQuerry, setQuerry }) {
+  return (
+    <div>
+      <input
+        placeholder="Search"
+        onInput={e => setQuerry(searchQuerry = e.target.value)}
+      >
+      </input>
+      {searchQuerry ?
+        <ToogleMany /> :
+        null}
     </div>
   )
 }
 
 
-
-
-
-function Search({searchQuerry, setQuerry}) {
+function ToogleMany() {
+  const toogleMany = useContext(ToogleManyComtext);
   return (
-    <input 
-      placeholder="Search"
-      onInput={e => setQuerry(searchQuerry = e.target.value)}
+    <span>
+      <input
+        type="button"
+        value="Mark all"
+        onClick={() => toogleMany(true)}
       >
-    </input>
+      </input>
+      <input
+        type="button"
+        value="Сancel all"
+        onClick={() => toogleMany(false)}
+      >
+      </input>
+    </span>
   )
 }
 
-function Compleated({todos}) {
+
+function Compleated({ todos }) {
   return (
     <div>
       {todos.filter(todo => todo.isDone).length}/{todos.length}
@@ -54,35 +134,6 @@ function Compleated({todos}) {
 }
 
 
-function Todos({searchQuerry, toogle, todos}) {
-  return(
-    <div id="todos">
-      {todos.filter(todo => 
-        todo.title.includes(searchQuerry)).map(todo => (
-                          <Todo 
-                            key={todo.id}
-                            todo={todo}
-                            toogle = {toogle}
-                          />))}
-    </div>
-  )
-}
-
-function Todo({todo, toogle}) {
-  return (
-    <label id="todo">
-      <input 
-        type="checkbox"
-        checked={todo.isDone}
-        onChange={() => toogle(todo)}>
-      </input>
-      {todo.title}
-    </label>
-  )
-}
-
-
- 
 ReactDOM.render(
   <View />,
   document.getElementById('root')

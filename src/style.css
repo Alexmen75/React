@@ -3,3 +3,10 @@
   padding-left: 10px;
   padding-top: 10px;
 }
+
+
+#empty-todo{
+  display: block;
+  padding-top: 15px;
+  padding-left: 15px;
+}
