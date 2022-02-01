@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 // import { Todo } from "./todo-model.js";
-import { NewTodoContext, CreateTodoContext, DeleteTodoContext} from "./context.js";
+import { DispatchContext } from "./context.js";
+import { actions } from './todo-model.js';
 
 
 
@@ -16,19 +17,16 @@ function EmptyTodos({ emptyTodoList }) {
 }
 
 const EmptyTodo = React.memo(function EmptyTodo({ todo }) {
-  const saveValue = useContext(NewTodoContext);
-  const addNewTodo = useContext(CreateTodoContext);
-  const deleteEmptyTodo = useContext(DeleteTodoContext);
+  const dispatch = useContext(DispatchContext);
   return (
     // <form id="empty-todo">
     <form id="empty-todo" onSubmit={() =>{
-      addNewTodo(todo);
-      deleteEmptyTodo(todo);
+      dispatch({type: actions.createTodo, todo: todo})
     } }>
       <input
         placeholder="Title"
         value={todo.title}
-        onInput={e => saveValue(todo, e.target.value)}>
+        onInput={e => dispatch({type: actions.saveValue, todo: todo, value: e.target.value})}>
       </input>
       <input
         type="submit"

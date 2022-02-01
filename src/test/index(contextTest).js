@@ -73,11 +73,11 @@ function Todos() {
       <TodoContext.Consumer>
         {({ model, toogle }) =>
         (model.todos.map(todo => (
-          <Todo
-            todo={todo}
-            key={todo.id}
-            onChange={toogle}
-          />)))}
+                          <Todo
+                            todo={todo}
+                            key={todo.id}
+                            onChange={toogle}
+                          />)))}
       </TodoContext.Consumer>
     </div>
   )
