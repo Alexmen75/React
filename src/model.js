@@ -1,3 +1,5 @@
+import { makeObservable, observable } from "mobx";
+
 export class Todo{
   id;
   title;
@@ -6,6 +8,10 @@ export class Todo{
     this.id = id;
     this.title = title;
     this.isDone = isDone;
+    makeObservable(this,{
+      isDone: observable,
+      title: observable,
+    });
   }
 }
 
