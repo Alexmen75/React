@@ -2,12 +2,10 @@ import React, { useContext } from "react";
 import { observer } from "mobx-react-lite";
 import { action, autorun } from "mobx";
 import Todo from "./model";
-import { TodoContext } from "./TodoSection";
+import { TodoContext } from "./App";
 
 
-let EmptyTodoCreator = function EmptyTodoCreator({
-  emptyTodos
-}) {
+let EmptyTodoCreator = function EmptyTodoCreator() {
   const todos = useContext(TodoContext);
 
   return (
@@ -15,7 +13,7 @@ let EmptyTodoCreator = function EmptyTodoCreator({
       <input
         type="button"
         value="Add"
-        onClick={action(() => emptyTodos.set(emptyTodos.get().concat([new Todo(-todos.get().length-emptyTodos.get().length, "", false)])))}
+        onClick={() => todos.addEmpty()}
       />
     </div>
   );

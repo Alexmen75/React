@@ -1,16 +1,22 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import TodoView from "./TodoView";
+import EmptyTodoView from "./EmptyTodoView";
+import Task from "./tasks";
 
 let Todos = function Todos({
-  todos
-}){
+  filtered,
+  empties
+}) {
+  console.log("Todos ");
   return (
     <div>
-      {todos.map(todo => (
-        <TodoView
-          key={todo.id}
-          todo={todo}/>
+      {filtered.map(todo => (
+        <TodoView key={todo.id} todo={todo} />
+      ))}
+
+      {empties.map(todo => (
+        <EmptyTodoView key={todo.id} todo={todo} />
       ))}
     </div>
   );
