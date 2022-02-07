@@ -2,13 +2,12 @@ import "./style.css";
 import React from 'react';
 import { observer } from "mobx-react-lite";
 import { Todos } from "./model"
-import TodoSection from './TodoSection';
+import TodoSection from './TodoSection'; 
 
-export const TodoContext = React.createContext(null);
+
+export const TodoContext = React.createContext<Todos>(new Todos());
 
 const todos = new Todos();
-todos.seed();
-// const emptyTodos = observable.box([]);
 
 let App = function App() {
   console.log("View render");
@@ -17,7 +16,6 @@ let App = function App() {
     <div className="todo-app">
       <TodoContext.Provider value={todos}> {/* Типа локальная копия базы данных */}
         <TodoSection />
-        {/* <TodoSection /> */}
       </TodoContext.Provider>
     </div>
   )
